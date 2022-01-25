@@ -164,5 +164,5 @@ async def on_message(message):
         for i in eegs:
             if i in message.content.lower():
                 await message.channel.send(eegs[i])
-
-client.run("NzY1MjMwODY0MDI3MDkwOTQ1.X4Ryxw.BvbbT2huAM9WIUfsOP00-gYiPRg")
+#Unikalny identyfikator autoryzacyjny Dla API discorda
+client.run("Prywatny Token")
