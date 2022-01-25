@@ -1,5 +1,6 @@
 import asyncio
 import discord
+import json
 import gspread
 from datetime import datetime
 from datetime import timedelta
@@ -10,28 +11,11 @@ global tommorow, commands, wazne, eegs, today
 wazne = ""
 today = str(datetime.today().date())
 tommorow = str(datetime.today().date() + timedelta(days=1))
-commands = {
-    "ao": "Analiza Obwodów\nWykład: Teams AO_II_2020_zima\nUPEL: https://upel2.cel.agh.edu.pl/wiet/course/view.php?id=1061",
-    "mn": "Metody Numeryczne\nWykład: Teams Met_Num_2020_zima",
-    "cue": "Cyfrowe Układy Elektroniczne\nWykład: Teams IET_KE_CUE\nLaby: Teams CUE2 zima 2020/2021, kod:j6hf5t0",
-    "ee": "Elementy Elektroniczne\nWykład i Laby: https://iet-agh.webex.com/meet/dziurdzi",
-    "ts": "Teoria Sygnałów\nWykład, Laby, Ćwiczenia: https://iet-agh.webex.com/meet/korohoda\nMateriały: http://home.agh.edu.pl/~korohoda/rok_2020_2021_zima/TS_EL_2/ (klucz: teor_+syg*7)\nhttps://upel2.cel.agh.edu.pl/wiet/course/view.php?id=1074 ",
-    "po": "Programowanie Obiektowe\nWykład: https://iet-agh.webex.com/iet-agh/j.php?MTID=m1b88ee8d5b211e226ccb1b32bf968c07 \nLaby: skype: rafal.fraczek@cyfronet.pl\n  https://docs.google.com/document/d/1ZCi0pdhFpTjp16Vc8hD3hTf_W4TmSiwrQ09xzo-FW2Y/edit?usp=drivesdk",
-    "ap": "Automatyka Przemysłowa\nWykład: https://iet-agh.webex.com/join/jacek.ostrowski",
-    "pz": "Podstawy Zarządzania\nWykład: Teams Wykłady_Podstawy Zarządzania\n UPEL: https://upel2.cel.agh.edu.pl/wiet/course/view.php?id=966 ",
-    "ważne": wazne,
-    "wazne": wazne,
-    "halp": "**S P I S   K O M E N D:**\n!<skrótprzedmiotu> - linki związane z danym przedmiotem (PZ, AO, CUE, EE, TS, MN, AP, PO)\nCo jutro? - pokazuje co jutro\nCo dzisiaj?/Co dziś? - pokazuje co dzisiaj\n Co w <dzień tygodnia>? pokazuje co w dany dzień C:"
-}
-pics = {
-    "korohod": "korohoda.png",
-    "sypk": "sypka.png",
-    "co?": "co.png"
-}
+with open('commands.json', encoding="utf8")as file:
+    commands = json.load(file)
+
 eegs = {
     "haha(1)": "haha(2)",
-    "korochod": "chacha(1)",
-    "karwatowski": "\"Symulacja nie pokazuje czy układ działa prawidłowo, jest tylko kilka wyników i też nie są one sprawdzone\""
 }
 dayz = ("poniedziałek", "wtorek", "środ", "czwartek", "piątek")
 def getData(when):
@@ -88,9 +72,21 @@ def getData(when):
         if when == "środ":
             when = "środę"
 
-    LAB_1 = mess.format(when, vals[row][1], vals[row][2],vals[row][3], commands["wazne"])
-    LAB_2 = mess.format(when, vals[row][4], vals[row][5],vals[row][6], commands["wazne"])
-    LAB_3 = mess.format(when, vals[row][7], vals[row][8],vals[row][9], commands["wazne"])
+    LAB_1 = discord.Embed(title='Plan na {}:'.format(when), colour=discord.Colour.from_rgb(234, 46, 255), description= commands["wazne"])
+    LAB_1.add_field(name='Przedmioty', value=vals[row][1], inline=True)
+    LAB_1.add_field(name="Kolosy", value=vals[row][2], inline=True)
+    LAB_1.add_field(name="Zadania", value=vals[row][3], inline=True)
+
+    LAB_2 = discord.Embed(title='Plan na {}:'.format(when), colour=discord.Colour.from_rgb(234, 46, 255),description= commands["wazne"])
+    LAB_2.add_field(name='Przedmioty', value=vals[row][4], inline=True)
+    LAB_2.add_field(name="Kolosy", value=vals[row][5], inline=True)
+    LAB_2.add_field(name="Zadania", value=vals[row][6], inline=True)
+
+    LAB_3 = discord.Embed(title='Plan na {}:'.format(when), colour=discord.Colour.from_rgb(234, 46, 255),description= commands["wazne"])
+    LAB_3.add_field(name='Przedmioty', value=vals[row][7], inline=True)
+    LAB_3.add_field(name="Kolosy", value=vals[row][8], inline=True)
+    LAB_3.add_field(name="Zadania", value=vals[row][9], inline=True)
+
 
 getData(0)
 
@@ -105,24 +101,17 @@ async def on_message(message):
     lastAuthor = message.author
     if message.author == client.user:
         return
-    elif message.content.lower() == "wykurwiaj":
-        print("CH")
-        vc.stop()
-        await vc.disconnect()
-        print("uj")
     elif message.content.startswith('!') and commands.get(message.content.lower()[1:]):
-        await message.channel.send(commands.get(message.content.lower()[1:]))
+        await message.channel.send(embed = discord.Embed(description=commands.get(message.content.lower()[1:]),colour=discord.Colour.from_rgb(234, 46, 255)))
     elif(message.content == 'Przypominajko!' or message.content.lower() == 'co jutro?'):
         try:
             getData(0)
-            if (message.author == "adam_mickiewicz#9427"):
-                await message.channel.send("Sukrwysynu jebany\n ")
-            elif ("Laby 1" in str(message.author.roles)):
-                await message.channel.send(LAB_1)
+            if   ("Laby 1" in str(message.author.roles)):
+                await message.channel.send(embed = LAB_1)
             elif ("Laby 2" in str(message.author.roles)):
-                await message.channel.send(LAB_2)
+                await message.channel.send(embed = LAB_2)
             elif("Laby 3" in str(message.author.roles)):
-                await message.channel.send(LAB_3)
+                await message.channel.send(embed = LAB_3)
             else:
                 await message.channel.send("Nie potrafie ci pomóc")
         except:
@@ -130,14 +119,12 @@ async def on_message(message):
     elif(message.content.lower() == "co dzisiaj?" or message.content.lower() == "co dziś?"):
         try:
             getData(1)
-            if (message.author == "adam_mickiewicz#9427"):
-                await message.channel.send("Sukrwysynu jebany\n ")
-            elif ("Laby 1" in str(message.author.roles)):
-                await message.channel.send(LAB_1)
+            if ("Laby 1" in str(message.author.roles)):
+                await message.channel.send(embed = LAB_1)
             elif ("Laby 2" in str(message.author.roles)):
-                await message.channel.send(LAB_2)
+                await message.channel.send(embed = LAB_2)
             elif("Laby 3" in str(message.author.roles)):
-                await message.channel.send(LAB_3)
+                await message.channel.send(embed = LAB_3)
             else:
                 await message.channel.send("Nie potrafie ci pomóc")
         except:
@@ -147,14 +134,12 @@ async def on_message(message):
             if dayz[i] in message.content.lower():
                 try:
                     getData(dayz[i])
-                    if (message.author == "adam_mickiewicz#9427"):
-                        await message.channel.send("Sukrwysynu jebany\n ")
-                    elif ("Laby 1" in str(message.author.roles)):
-                        await message.channel.send(LAB_1)
+                    if   ("Laby 1" in str(message.author.roles)):
+                        await message.channel.send(embed = LAB_1)
                     elif ("Laby 2" in str(message.author.roles)):
-                        await message.channel.send(LAB_2)
+                        await message.channel.send(embed = LAB_2)
                     elif ("Laby 3" in str(message.author.roles)):
-                        await message.channel.send(LAB_3)
+                        await message.channel.send(embed = LAB_3)
                     else:
                         await message.channel.send("Nie potrafie ci pomóc")
                 except:
@@ -170,35 +155,12 @@ async def on_message(message):
         vc = await message.author.voice.channel.connect()
         vc.stop()
         vc.play(discord.FFmpegPCMAudio('gotowe.mp3'), after=lambda e: print("OK", e))
-    elif("link" in message.content or "linka" in message.content):
-        global linkevent
-        await message.channel.send("Czy jesteś pewien, że sprawdziłeś sekcję \"LINKI\"???")
-        linkAuthor = message.author
-        linkevent = 1
-    elif("nie" in message.content.lower() and linkevent == 1):
-        if(linkAuthor == lastAuthor):
-            await message.channel.send("To kurwa sprawdź 🤦‍")
-            await message.channel.send(file=discord.File('gorlich.jpg'))
-            linkAuthor =""
-            lastAuthor =""
-            linkevent = 0
-    elif("tak" in message.content.lower() and linkevent == 1):
-        if (linkAuthor == lastAuthor):
-            await message.channel.send("To zobacz jeszcze tutaj: https://docs.google.com/document/d/1AEpgHGvYnHHg0PCNaBX5As3rcggNjfzjuwfU0wpVZpI/edit")
-            linkAuthor = ""
-            lastAuthor = ""
-            linkevent = 0
     else:
         for i in pics:
             if i in message.content.lower():
                 emoji = discord.utils.get(client.emojis, name='szacun')
                 await message.add_reaction(emoji)
                 await message.channel.send(file = discord.File(pics[i]))
-                if (i == "korohod" and message.author.voice is not None):
-                    print(message.author.voice.channel)
-                    vc = await message.author.voice.channel.connect()
-                    vc.stop()
-                    vc.play(discord.FFmpegPCMAudio('korohoda_song.mp3'), after=lambda e: print("OK", e))
         for i in eegs:
             if i in message.content.lower():
                 await message.channel.send(eegs[i])
